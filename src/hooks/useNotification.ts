@@ -10,6 +10,11 @@ export const useNotification = () => {
     return "Notification" in window;
   };
 
+  // Check if the environment is Android
+  const isAndroid = () => {
+    return /Android/i.test(navigator.userAgent);
+  };
+
   // Request notification permission
   const requestPermission = async () => {
     if (isNotificationSupported()) {
@@ -27,18 +32,27 @@ export const useNotification = () => {
   // Show a notification
   const showNotification = (title: string, options?: NotificationOptions) => {
     if (isNotificationSupported() && Notification.permission === "granted") {
-      const notification = new Notification(title, options);
+      // Android-specific handling
+      if (isAndroid() && "serviceWorker" in navigator) {
+        // Use Service Worker for Android notifications
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(title, options);
+        });
+      } else {
+        // Standard notification for non-Android or non-Service Worker environments
+        const notification = new Notification(title, options);
 
-      // Handle notification click
-      notification.onclick = () => {
-        window.focus();
-        const chat = chatList.find((c) => c.roomId === options?.data?.roomId);
-        if (chat) {
-          setSelectedChat(chat);
-        }
-      };
+        // Handle notification click
+        notification.onclick = () => {
+          window.focus();
+          const chat = chatList.find((c) => c.roomId === options?.data?.roomId);
+          if (chat) {
+            setSelectedChat(chat);
+          }
+        };
+      }
     } else {
-      // Fallback for unsupported browsers (e.g., iOS)
+      // Fallback for unsupported browsers (e.g., iOS, older Android browsers)
       console.warn("Notifications are not supported or permission is not granted.");
       alert(title + ": " + (options?.body || ""));
     }
