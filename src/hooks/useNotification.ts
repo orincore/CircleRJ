@@ -5,21 +5,28 @@ import { useChatContext } from "@/components/chat/ChatProvider";
 export const useNotification = () => {
   const { selectedChat, chatList, setSelectedChat } = useChatContext();
 
+  // Check if notifications are supported
+  const isNotificationSupported = () => {
+    return "Notification" in window;
+  };
+
   // Request notification permission
   const requestPermission = async () => {
-    if ("Notification" in window) {
+    if (isNotificationSupported()) {
       try {
         const permission = await Notification.requestPermission();
         console.log("Notification permission:", permission);
       } catch (error) {
         console.error("Error requesting notification permission:", error);
       }
+    } else {
+      console.warn("Notifications are not supported in this browser.");
     }
   };
 
   // Show a notification
   const showNotification = (title: string, options?: NotificationOptions) => {
-    if (Notification.permission === "granted") {
+    if (isNotificationSupported() && Notification.permission === "granted") {
       const notification = new Notification(title, options);
 
       // Handle notification click
@@ -30,13 +37,19 @@ export const useNotification = () => {
           setSelectedChat(chat);
         }
       };
+    } else {
+      // Fallback for unsupported browsers (e.g., iOS)
+      console.warn("Notifications are not supported or permission is not granted.");
+      alert(title + ": " + (options?.body || ""));
     }
   };
 
   // Automatically request permission when the hook is used
   useEffect(() => {
-    requestPermission();
+    if (isNotificationSupported()) {
+      requestPermission();
+    }
   }, []);
 
-  return { requestPermission, showNotification };
+  return { requestPermission, showNotification, isNotificationSupported };
 };
