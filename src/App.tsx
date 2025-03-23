@@ -12,7 +12,7 @@ import Messages from "./pages/Messages";
 import { Profile } from "./pages/Profile";
 import { Layout } from "./components/Layout";
 import AuthWrapper from "./components/AuthWrapper";
-import { ChatProvider } from "@/components/chat/ChatProvider"; // Import ChatProvider
+import { ChatProvider } from "@/components/chat/ChatProvider";
 
 function App() {
   return (
@@ -38,12 +38,12 @@ function App() {
           }
         />
 
-        {/* Protected routes: wrapped in SignedIn and AuthWrapper */}
+        {/* Protected routes: wrapped in SignedIn, AuthWrapper, and ChatProvider */}
         <Route
           element={
             <SignedIn>
               <AuthWrapper>
-                <ChatProvider> {/* Wrap Layout with ChatProvider */}
+                <ChatProvider>
                   <Layout />
                 </ChatProvider>
               </AuthWrapper>
