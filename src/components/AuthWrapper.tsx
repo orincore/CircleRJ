@@ -6,35 +6,56 @@ import { Navigate } from "react-router-dom";
 
 function AuthWrapper({ children }: { children: JSX.Element }) {
   const { user, isLoaded, isSignedIn } = useUser();
-  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (isLoaded && user) {
-      const fetchProfile = async () => {
-        const { data, error } = await supabase
-          .from("user_profiles")
-          .select("*")
-          .eq("user_id", user.id)
-          .single();
-        if (error || !data) {
-          setHasProfile(false);
-        } else {
-          setHasProfile(true);
+    if (isLoaded && isSignedIn && user) {
+      const checkProfile = async () => {
+        try {
+          console.log("Checking profile after login...");
+
+          // Fetch the user's profile from Supabase
+          const { data, error } = await supabase
+            .from("user_profiles")
+            .select("gender, interests")
+            .eq("user_id", user.id)
+            .single();
+
+          if (error || !data) {
+            console.log("Profile not found or error fetching profile:", error);
+            setProfileComplete(false); // Redirect to profile setup
+            return;
+          }
+
+          // Check if required fields are present
+          const hasRequiredFields = data.gender && data.interests?.length > 0;
+          console.log("Profile data:", data);
+          console.log("Has required fields:", hasRequiredFields);
+
+          setProfileComplete(hasRequiredFields);
+        } catch (err) {
+          console.error("Error checking profile:", err);
+          setProfileComplete(false); // Redirect to profile setup on error
         }
       };
-      fetchProfile();
-    }
-  }, [isLoaded, user]);
 
-  if (!isLoaded) {
+      // Run the profile check after every login
+      checkProfile();
+    }
+  }, [isLoaded, isSignedIn, user]); // Re-run when auth state changes
+
+  // Show loading state while checking profile
+  if (!isLoaded || profileComplete === null) {
     return <div>Loading...</div>;
   }
 
-  // If user is signed in but has not completed profile, redirect them
-  if (isSignedIn && hasProfile === false) {
+  // Redirect to profile setup if profile is incomplete
+  if (isSignedIn && !profileComplete) {
+    console.log("Redirecting to profile setup...");
     return <Navigate to="/profile-setup" replace />;
   }
 
+  // Render children if profile is complete
   return children;
 }
 
