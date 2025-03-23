@@ -41,6 +41,10 @@ function AuthWrapper({ children }: { children: JSX.Element }) {
 
       // Run the profile check after every login
       checkProfile();
+    } else if (isLoaded && !isSignedIn) {
+      // If the user is not signed in, set profileComplete to true
+      // to avoid being stuck on the loading screen
+      setProfileComplete(true);
     }
   }, [isLoaded, isSignedIn, user]); // Re-run when auth state changes
 
@@ -55,7 +59,7 @@ function AuthWrapper({ children }: { children: JSX.Element }) {
     return <Navigate to="/profile-setup" replace />;
   }
 
-  // Render children if profile is complete
+  // Render children if profile is complete or user is signed out
   return children;
 }
 
