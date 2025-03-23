@@ -27,12 +27,19 @@ function AuthWrapper({ children }: { children: JSX.Element }) {
             return;
           }
 
+          // Parse interests if it's a string
+          const interests = typeof data.interests === "string" 
+            ? data.interests.split(",").map(interest => interest.trim()) 
+            : data.interests;
+
           // Check if required fields are present
-          const hasRequiredFields = data.gender && data.interests?.length > 0;
+          const hasRequiredFields = data.gender && interests?.length > 0;
           console.log("Profile data:", data);
+          console.log("Parsed interests:", interests);
           console.log("Has required fields:", hasRequiredFields);
 
-          setProfileComplete(hasRequiredFields);
+          // Explicitly set profileComplete to true or false
+          setProfileComplete(!!hasRequiredFields);
         } catch (err) {
           console.error("Error checking profile:", err);
           setProfileComplete(false); // Redirect to profile setup on error
