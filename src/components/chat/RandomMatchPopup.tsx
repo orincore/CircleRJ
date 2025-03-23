@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useChatContext } from "./ChatProvider";
-import { maskName } from "./utils"; // Or inline
+import { maskName } from "./utils";
 
 export const RandomMatchPopup: React.FC = () => {
   const {
@@ -13,9 +13,7 @@ export const RandomMatchPopup: React.FC = () => {
     acceptRandomMatch,
     rejectRandomMatch,
     setIsRandomMatching,
-    setMessages,
-    setChatList,
-    setSelectedChat,
+    accepted // Added missing accepted state from context
   } = useChatContext();
 
   function closePopup() {
@@ -63,8 +61,11 @@ export const RandomMatchPopup: React.FC = () => {
               <Button variant="outline" onClick={rejectRandomMatch}>
                 Reject
               </Button>
-              <Button onClick={acceptRandomMatch}>
-                Accept
+              <Button 
+                onClick={acceptRandomMatch}
+                disabled={accepted}
+              >
+                {accepted ? "Connecting..." : "Accept"}
               </Button>
             </div>
           </>
@@ -73,32 +74,7 @@ export const RandomMatchPopup: React.FC = () => {
             <h2 className="text-3xl font-bold mb-4">Hurrey!!! You are now connected.</h2>
             <Button
               onClick={() => {
-                setSelectedChat(matchedUser);
                 setIsRandomMatching(false);
-                setMessages([
-                  {
-                    senderId: "system",
-                    text: "Hurrey!!! You are now connected.",
-                    time: new Date().toLocaleTimeString(),
-                  },
-                ]);
-                setChatList((prev) => {
-                  if (!prev.find((chat) => chat.id === matchedUser.id)) {
-                    return [
-                      ...prev,
-                      {
-                        id: matchedUser.id,
-                        user: matchedUser,
-                        lastMessage: {
-                          text: "Hurrey!!! You are now connected.",
-                          time: new Date().toLocaleTimeString(),
-                          senderId: "system",
-                        },
-                      },
-                    ];
-                  }
-                  return prev;
-                });
               }}
             >
               Proceed to Chat
