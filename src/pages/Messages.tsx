@@ -33,11 +33,11 @@ export default function Messages() {
     <div className="h-[calc(100vh-8rem)] flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
       {/* Mobile menu button */}
       <button
-        className="md:hidden fixed bottom-20 right-4 z-50 p-3 bg-primary-500 text-white rounded-full shadow-lg"
-        onClick={() => setShowSidebar(!showSidebar)}
-      >
-        {showSidebar ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
+  className="md:hidden fixed top-3 left-4 z-50 p-3 bg-primary-500 text-white rounded-full shadow-lg"
+  onClick={() => setShowSidebar(!showSidebar)}
+>
+  {showSidebar ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+</button>
 
       {/* Sidebar */}
       <div
