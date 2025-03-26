@@ -40,22 +40,21 @@ export default function Messages() {
 </button>
 
       {/* Sidebar */}
-      <div
-        className={`${
-          showSidebar ? "block" : "hidden"
-        } md:block w-full md:w-80 flex-shrink-0 z-40 md:relative fixed inset-0`}
-      >
-        <ChatSidebar onSelectChat={() => setShowSidebar(false)} />
-      </div>
+  <div
+    className={`${
+      showSidebar ? "translate-x-0" : "-translate-x-full"
+    } md:translate-x-0 md:block w-full md:w-80 flex-shrink-0 z-40 md:relative fixed inset-0 transition-transform duration-300 ease-in-out bg-white dark:bg-gray-900`}
+  >
+    <ChatSidebar onSelectChat={() => setShowSidebar(false)} />
+  </div>
 
       {/* Chat Window */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <ChatWindow onOpenSidebar={() => setShowSidebar(true)} />
-      </div>
+  <div className="flex-1 flex flex-col overflow-hidden relative">
+    <ChatWindow onOpenSidebar={() => setShowSidebar(true)} />
+  </div>
 
-      {/* Random Match Popup */}
-      <RandomMatchPopup />
-    </div>
+  <RandomMatchPopup />
+</div>
   )
 }
 
