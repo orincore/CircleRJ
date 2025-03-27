@@ -1,6 +1,6 @@
 // src/App.tsx
+import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import { Welcome } from "./pages/auth/Welcome";
 import { Login } from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -12,63 +12,88 @@ import Messages from "./pages/Messages";
 import { Profile } from "./pages/Profile";
 import { Layout } from "./components/Layout";
 import AuthWrapper from "./components/AuthWrapper";
-import { ChatProvider } from "@/components/chat/ChatProvider";
+import { ChatProvider } from "./components/chat/ChatProvider";
+import { ThemeProvider } from "./components/ThemeProvider";
+import { AuthProvider, useAuth } from "./components/AuthContext";
+import OtherUserProfile from "./pages/OtherUserProfile"; // Add this import
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/profile-setup" element={<ProfileSetup />} />
+    <ThemeProvider>
+      <Router>
+        <AuthProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
 
-        {/* Root route: if signed in, go to home; else, welcome page */}
-        <Route
-          path="/"
-          element={
-            <>
-              <SignedIn>
-                <Navigate to="/home" replace />
-              </SignedIn>
-              <SignedOut>
-                <Welcome />
-              </SignedOut>
-            </>
-          }
-        />
+            {/* Root route */}
+            <Route
+              path="/"
+              element={
+                <AuthCheck>
+                  {(isAuthenticated) => (
+                    isAuthenticated ? <Navigate to="/home" replace /> : <Welcome />
+                  )}
+                </AuthCheck>
+              }
+            />
 
-        {/* Protected routes: wrapped in SignedIn, AuthWrapper, and ChatProvider */}
-        <Route
-          element={
-            <SignedIn>
-              <AuthWrapper>
-                <ChatProvider>
-                  <Layout />
-                </ChatProvider>
-              </AuthWrapper>
-            </SignedIn>
-          }
-        >
-          <Route path="/home" element={<Home />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/create" element={<Create />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/profile" element={<Profile />} />
-        </Route>
+            {/* Protected routes */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <AuthWrapper>
+                    <ChatProvider>
+                      <Layout />
+                    </ChatProvider>
+                  </AuthWrapper>
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/home" element={<Home />} />
+              <Route path="/explore" element={<Explore />} />
+              <Route path="/create" element={<Create />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/profile" element={<Profile />} />
+              {/* Add the new profile route */}
+              <Route path="/profile/:userId" element={<OtherUserProfile />} />
+            </Route>
 
-        {/* Fallback: redirect signed-out users to sign in */}
-        <Route
-          path="*"
-          element={
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          }
-        />
-      </Routes>
-    </Router>
+            {/* Fallback for non-existent routes */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
+      </Router>
+    </ThemeProvider>
   );
+}
+
+// Helper component for authentication check
+function AuthCheck({ children }: { children: (isAuthenticated: boolean) => React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return children(!!user);
+}
+
+// Protected route component
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
 }
 
 export default App;
